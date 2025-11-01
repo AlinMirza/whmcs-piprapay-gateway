@@ -70,8 +70,7 @@ if (isset($verifyResult['status']) && strtolower($verifyResult['status']) === 'c
     $invoiceData = localAPI('GetInvoice', ['invoiceid' => $invoiceId]);
     
     if ($invoiceData['result'] !== 'success' || !isset($invoiceData['total'])) {
-        $errorMsg = $invoiceData['message'] ?? 'Unknown error';
-        logTransaction($gatewayModuleName, ['error' => 'Failed to fetch invoice', 'result' => $invoiceData['result'] ?? 'error', 'message' => $errorMsg], 'Invoice Fetch Failed');
+        logTransaction($gatewayModuleName, ['error' => 'Failed to fetch invoice', 'result' => $invoiceData['result'] ?? 'error'], 'Invoice Fetch Failed');
         header("HTTP/1.1 500 Internal Server Error");
         die("Error processing payment");
     }
