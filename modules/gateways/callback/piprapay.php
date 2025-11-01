@@ -39,8 +39,12 @@ if (!$invoiceId || !$ppId || !$status) {
 
 $invoiceId      = (int)$invoiceId;
 $transactionId  = $ppId;
-$paymentAmount  = $data['amount'] ?? 0;
 $paymentFee     = 0.00;
+
+// Fetch the invoice amount from WHMCS database in invoice currency
+// This prevents currency mismatch when payment is made in a different currency
+$invoiceData = localAPI('GetInvoice', ['invoiceid' => $invoiceId]);
+$paymentAmount = $invoiceData['total'] ?? 0;
 
 // Step 1: Verify the payment with PipraPay
 $verifyPayload = json_encode(['pp_id' => $ppId]);
