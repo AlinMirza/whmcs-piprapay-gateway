@@ -32,7 +32,8 @@ A secure and fully compatible WHMCS payment gateway module to accept payments th
 - API Key (from your PipraPay dashboard)
 - Base URL (e.g., `https://sandbox.piprapay.com`)
 - Return Type (GET or POST)
-- Currency (e.g., BDT)
+
+**Note:** The gateway now automatically uses the client's currency from WHMCS. There is no need to configure a specific currency.
 
 ---
 
