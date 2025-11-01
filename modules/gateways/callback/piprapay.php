@@ -39,7 +39,6 @@ if (!$invoiceId || !$ppId || !$status) {
 
 $invoiceId      = (int)$invoiceId;
 $transactionId  = $ppId;
-$paymentAmount  = $data['amount'] ?? 0;
 $paymentFee     = 0.00;
 
 // Step 1: Verify the payment with PipraPay
@@ -54,10 +53,29 @@ curl_setopt($ch, CURLOPT_HTTPHEADER, [
 ]);
 curl_setopt($ch, CURLOPT_POSTFIELDS, $verifyPayload);
 $verifyResponse = curl_exec($ch);
-$verifyResult   = json_decode($verifyResponse, true);
+curl_close($ch);
+
+if ($verifyResponse === false) {
+    logTransaction($gatewayModuleName, ['error' => 'Payment verification request failed'], 'Verification Request Failed');
+    header("HTTP/1.1 500 Internal Server Error");
+    die("Error verifying payment");
+}
+
+$verifyResult = json_decode($verifyResponse, true);
 
 // Step 2: Confirm status from verification
 if (isset($verifyResult['status']) && strtolower($verifyResult['status']) === 'completed') {
+    // Fetch the invoice amount from WHMCS database in invoice currency
+    // This prevents currency mismatch when payment is made in a different currency
+    $invoiceData = localAPI('GetInvoice', ['invoiceid' => $invoiceId]);
+    
+    if ($invoiceData['result'] !== 'success' || !isset($invoiceData['total'])) {
+        logTransaction($gatewayModuleName, ['error' => 'Failed to fetch invoice', 'result' => $invoiceData['result'] ?? 'error'], 'Invoice Fetch Failed');
+        header("HTTP/1.1 500 Internal Server Error");
+        die("Error processing payment");
+    }
+    
+    $paymentAmount = $invoiceData['total'];
     addInvoicePayment(
         $invoiceId,
         $transactionId,
