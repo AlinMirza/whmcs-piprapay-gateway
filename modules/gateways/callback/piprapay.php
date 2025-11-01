@@ -41,17 +41,6 @@ $invoiceId      = (int)$invoiceId;
 $transactionId  = $ppId;
 $paymentFee     = 0.00;
 
-// Fetch the invoice amount from WHMCS database in invoice currency
-// This prevents currency mismatch when payment is made in a different currency
-$invoiceData = localAPI('GetInvoice', ['invoiceid' => $invoiceId]);
-
-if ($invoiceData['result'] !== 'success' || !isset($invoiceData['total'])) {
-    logTransaction($gatewayModuleName, ['error' => 'Failed to fetch invoice', 'invoice_data' => $invoiceData], 'Invoice Fetch Failed');
-    die("Invoice not found or invalid");
-}
-
-$paymentAmount = $invoiceData['total'];
-
 // Step 1: Verify the payment with PipraPay
 $verifyPayload = json_encode(['pp_id' => $ppId]);
 
@@ -68,6 +57,18 @@ $verifyResult   = json_decode($verifyResponse, true);
 
 // Step 2: Confirm status from verification
 if (isset($verifyResult['status']) && strtolower($verifyResult['status']) === 'completed') {
+    // Fetch the invoice amount from WHMCS database in invoice currency
+    // This prevents currency mismatch when payment is made in a different currency
+    $invoiceData = localAPI('GetInvoice', ['invoiceid' => $invoiceId]);
+    
+    if ($invoiceData['result'] !== 'success' || !isset($invoiceData['total'])) {
+        $errorMsg = $invoiceData['message'] ?? 'Unknown error';
+        logTransaction($gatewayModuleName, ['error' => 'Failed to fetch invoice', 'result' => $invoiceData['result'] ?? 'error', 'message' => $errorMsg], 'Invoice Fetch Failed');
+        header("HTTP/1.1 500 Internal Server Error");
+        die("Error processing payment");
+    }
+    
+    $paymentAmount = $invoiceData['total'];
     addInvoicePayment(
         $invoiceId,
         $transactionId,
