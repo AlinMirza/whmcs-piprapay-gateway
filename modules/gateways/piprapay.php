@@ -49,11 +49,6 @@ function piprapay_config()
             'Options' => 'GET,POST',
             'Default' => 'POST',
         ],
-        'currency_pp' => [
-            'FriendlyName' => 'Currency',
-            'Type' => 'text',
-            'Default' => 'BDT',
-        ],
     ];
 }
 
