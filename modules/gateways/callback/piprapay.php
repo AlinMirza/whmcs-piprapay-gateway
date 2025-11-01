@@ -53,11 +53,10 @@ curl_setopt($ch, CURLOPT_HTTPHEADER, [
 ]);
 curl_setopt($ch, CURLOPT_POSTFIELDS, $verifyPayload);
 $verifyResponse = curl_exec($ch);
-$curlError = curl_error($ch);
 curl_close($ch);
 
 if ($verifyResponse === false) {
-    logTransaction($gatewayModuleName, ['error' => 'cURL request failed', 'message' => $curlError], 'Verification Request Failed');
+    logTransaction($gatewayModuleName, ['error' => 'Payment verification request failed'], 'Verification Request Failed');
     header("HTTP/1.1 500 Internal Server Error");
     die("Error verifying payment");
 }
