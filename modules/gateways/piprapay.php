@@ -64,7 +64,7 @@ function piprapay_link($params)
 
     $invoiceId = $params['invoiceid'];
     $amount = $params['amount'];
-    $currency = $params['currency_pp'];
+    $currency = $params['currency'];
     $returnUrl = $params['returnurl'];
 
     $parsedUrl = parse_url($params['systemurl']);
